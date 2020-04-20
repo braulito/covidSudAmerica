@@ -24,7 +24,6 @@ listaPaises = ['Chile','Argentina','Brazil','Uruguay','Bolivia',
 df  = df[df['Country/Region'].isin(listaPaises)]
 
 world = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
-i = 35
 
 mapa  = world[world['name'].isin(listaPaises)]
 
@@ -52,6 +51,7 @@ while i < cols:
     v = []
     while z < len(pa) :
         v.append(float((df.iloc[z][l[i]]*1000000)/pob[z]))
+        #v.append(float((df.iloc[z][l[i]])))
         z = z + 1
 
     valores[l[i]]=v
@@ -74,18 +74,18 @@ for m in vmin:
 lista = valores.columns
 cols = lista.size -1
 
-i=35
+i=38
 while i < lista.size:
     z = 0
     v = []
     while z < len(pa) :
         mul = 1000000
-        v.append(df.iloc[z][l[i]]*mul/pob[z])
+        v.append(valores.iloc[z][l[i]])
         z = z + 1
     mapa[l[i]] =v
     i = i + 1
 
-i=35
+i=38
 output_path = ''
 cont = 0
 

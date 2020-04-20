@@ -1,11 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sat Apr 18 10:13:05 2020
-
-@author: ValeYBrau
-"""
-
-
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -14,6 +6,7 @@ import os
 import subprocess
 import glob
 from PIL import Image
+import time
 
 df = pd.read_csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv")
 
@@ -23,11 +16,16 @@ listaPaises = ['Chile','Argentina','Brazil','Uruguay','Bolivia',
 
 df  = df[df['Country/Region'].isin(listaPaises)]
 
+df.drop(['Province/State','Country/Region',
+         'Lat','Long'],axis=1, inplace=True)
+
 world = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
 
 mapa  = world[world['name'].isin(listaPaises)]
 
 mapa = mapa.sort_values(["name"], ascending = (True))
+
+mapa.drop(['continent','iso_a3','gdp_md_est'],axis=1, inplace=True)
 
 pa = mapa['name'].tolist()
 pob =mapa['pop_est'].tolist()
@@ -35,63 +33,42 @@ pob =mapa['pop_est'].tolist()
 
 lista = df.columns
 cols = lista.size -1
-i = 1
+i = 4
 l = []
 
 while i <= cols:
     l.append(lista[i])
     i = i + 1
-
-valores  = pd.DataFrame()
-valores['Pais']=pa
-
-i=1
-while i < cols:
-    z = 0
-    v = []
-    while z < len(pa) :
-        v.append(float((df.iloc[z][l[i]]*1000000)/pob[z]))
-        #v.append(float((df.iloc[z][l[i]])))
-        z = z + 1
-
-    valores[l[i]]=v
-    i = i + 1
-
+    
+i=31
 
 vma = 0
 vmi = 999999999
-vmax = valores.max(axis=1)
-vmin = valores.min(axis=1)
 
-for m in vmax:
-    if (float(m) > float(vma)):
-        vma = m
-        
-for m in vmin:
-    if (m < vmi):
-        vmi = m
+lista =[]
 
-lista = valores.columns
-cols = lista.size -1
-
-i=38
-while i < lista.size:
+while i < len(l):
     z = 0
     v = []
     while z < len(pa) :
         mul = 1000000
-        v.append(valores.iloc[z][l[i]])
-        z = z + 1
+        valor = int(df.iloc[z][l[i]]) * mul / int(mapa.iloc[z]['pop_est'])
+        v.append(valor)
+        if (valor > vma):
+            vma = valor
+        if (valor < vmi):
+            vmi = valor
+        z = z + 1        
     mapa[l[i]] =v
+    lista.append(l[i])
     i = i + 1
 
-i=38
+i=0
 output_path = ''
-cont = 0
 
+while i < len(lista):
 
-while i < lista.size:
-   fig = mapa.plot(l[i], cmap='Reds', figsize=(10,10),
+   fig = mapa.plot(lista[i], cmap='Reds', figsize=(10,10),
                   linewidth=1, edgecolor='0', vmin=vmi, vmax=vma,
                   legend=True, norm=plt.Normalize(vmin=vmi, vmax=vma))
    fig.axis('off')
@@ -103,207 +80,27 @@ while i < lista.size:
                 fontsize=10, color='#555555')
    fi=""
      
-   if (cont<10) :
-       fi = "0" + str(cont)
+   if (i<10) :
+       fi = "00" + str(i)
+   elif (i<100):
+       fi = "0" + str(i)
    else:
-       fi = str(cont) 
+       fi = str(i)
+
    filepath = os.path.join(output_path, fi+'.png')
    chart = fig.get_figure()
    chart.savefig(filepath, dpi=72)
-   cont = cont + 1
    i = i + 1
+   
 
-
+millis = int(round(time.time() * 1000))
 frames = []
 imgs = glob.glob("*.png")
 for i in imgs:
     new_frame = Image.open(i)
     frames.append(new_frame)
 
-frames[0].save('00000.gif', format='GIF',
+frames[0].save('anim/'+str(millis)+' CONFIRMADOS.gif', format='GIF',
                append_images=frames[1:],
                save_all=True,
-               duration=175, loop=0)
-
-
-
-
-
-
-
-
-
-
-
-#BORRO DE VALORES LOS QUE NO ME INTERESAN
-
-
-
-
-
-
-
-    #print (l[i])
-    
-    #EN MAPA TENGO LOS VALORES QUE QUIERO
-    #EN LISTA TENGO LA FECHA (usar el subindice i)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-"""
-
-
-
-
-while i < lista.size:
-   #print(mapa[lista[i]])
-   #print("---------------------------------")
-   fig = mapa.plot(l[i], cmap='Reds', figsize=(10,10),
-                  linewidth=1, edgecolor='0', vmin=vmi, vmax=vma,
-                  legend=True, norm=plt.Normalize(vmin=vmi, vmax=vma))
-   fig.axis('off')
-   t = lista[i].split('/')
-   fig.set_title('Casos CONFIRMADOS ' + t[1] + '/' + t[0] + '/' + t[2] + ' (casos / millon hab)' , fontdict={'fontsize': '20','fontweight' : '3'})
-   fig.annotate('Fuente: Johns Hopkins University Center for Systems Science and Engineering , 2020',
-                xy=(0.1, .08), xycoords='figure fraction',
-                horizontalalignment='left', verticalalignment='top',
-                fontsize=10, color='#555555')
-   fi=""
-     
-   if (cont<10) :
-       fi = "0" + str(cont)
-   else:
-       fi = str(cont) 
-   filepath = os.path.join(output_path, fi+'.png')
-   chart = fig.get_figure()
-   chart.savefig(filepath, dpi=72)
-   cont = cont + 1
-   i = i + 1
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-pa.append("Argentina")
-pa.append("Bolivia")
-pa.append("Brazil")
-pa.append("Chile")
-pa.append("Colombia")
-pa.append("Ecuador")
-pa.append("Guyana")
-pa.append("Paraguay")
-pa.append("Peru")
-pa.append("Suriname")
-pa.append("Uruguay")
-pa.append("Venezuela")
-
-pob.append(44270000)
-pob.append(11350000)
-pob.append(209300000)
-pob.append(18000000)
-pob.append(49650000)
-pob.append(17080000)
-pob.append(779094)
-pob.append(6950000)
-pob.append(31990000)
-pob.append(575991)
-pob.append(3457000)
-pob.append(28870000)
-
-
-
-c = []
-c.append("b")
-c.append("g")
-c.append("r")
-c.append("y")
-
-
-
-
-
-mapa = world.loc[(world['name']=='Argentina') |
-              (world['name']=='Brazil') |
-              (world['name']=='Chile') |
-              (world['name']=='Uruguay') | 
-              (world['name']=='Paraguay')| 
-              (world['name']=='Bolivia')| 
-              (world['name']=='Peru')| 
-              (world['name']=='Ecuador')| 
-              (world['name']=='Colombia')| 
-              (world['name']=='Venezuela')| 
-              (world['name']=='Guyana')| 
-              (world['name']=='Suriname')]
-
-i=1
-    
-while i < 35:
-    print(i)
-    valores = valores.drop(l[i], 1)
-    i = i +1
-    
-
-
-z = 0
-while z < 4 :
-    i = 1
-    v = []
-    l2= []
-    
-    
-    p=[]
-    l3=[]
-    #print (z)                    
-    while i <= cols:
-        
-        if (df.iloc[z][lista[i]] > 0 ):
-            v.append((df.iloc[z][lista[i]]*1000000)/pob[z])
-        else:
-            v.append(0)
-            
-        if (df.iloc[z][lista[i]] >= 100 ):
-            p.append(df.iloc[z][lista[i]])
-            l3.append(lista[i])
-        
-        l2.append(lista[i])
-        
-     
-    for dia in l:
-        print(df.iloc[z][dia])
-        #print(df.loc[df[dia]])
-    print("----------------------------------------------")
-    z = z + 1
-
-"""
-
+               duration=175, loop=0)    

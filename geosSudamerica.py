@@ -15,10 +15,7 @@ import subprocess
 import glob
 from PIL import Image
 
-#df = pd.read_csv("https://github.com/CSSEGISandData/COVID-19/blob/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv")
-df = pd.read_csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv")
-
-
+df = pd.read_csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv")
 
 listaPaises = ['Chile','Argentina','Brazil','Uruguay','Bolivia',
       'Paraguay','Peru','Ecuador','Colombia',
@@ -26,22 +23,10 @@ listaPaises = ['Chile','Argentina','Brazil','Uruguay','Bolivia',
 
 df  = df[df['Country/Region'].isin(listaPaises)]
 
-
-
-
-
-#Falkland Islands (Malvinas)
-listaPaises = ['Chile','Argentina','Brazil','Uruguay','Bolivia',
-      'Paraguay','Peru','Ecuador','Colombia',
-      'Venezuela','Guyana','Suriname']
 world = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
 i = 35
 
 mapa  = world[world['name'].isin(listaPaises)]
-
-#df.replace(to_replace ="Falkland Islands (Malvinas)", value ="Islas Malvinas")
-#mapa.replace(to_replace ="Falkland Is.", value ="Islas Malvinas", inplace=True)
-
 
 mapa = mapa.sort_values(["name"], ascending = (True))
 
@@ -57,33 +42,9 @@ l = []
 while i <= cols:
     l.append(lista[i])
     i = i + 1
-    
-
-
-c = []
-c.append("b")
-c.append("g")
-c.append("r")
-c.append("y")
-
-lista = df.columns
-cols = lista.size -1
-i = 1
-l = []
-
-while i <= cols:
-    l.append(lista[i])
-    i = i + 1
-    
-
-
-
-
 
 valores  = pd.DataFrame()
 valores['Pais']=pa
-#valores['Poblacion'] = pob
-
 
 i=1
 while i < cols:
@@ -113,11 +74,7 @@ for m in vmin:
 lista = valores.columns
 cols = lista.size -1
 
-
-#CON ESTO RECORRO POR COLUMNA
 i=35
-
-
 while i < lista.size:
     z = 0
     v = []
@@ -134,8 +91,6 @@ cont = 0
 
 
 while i < lista.size:
-   #print(mapa[lista[i]])
-   #print("---------------------------------")
    fig = mapa.plot(l[i], cmap='Reds', figsize=(10,10),
                   linewidth=1, edgecolor='0', vmin=vmi, vmax=vma,
                   legend=True, norm=plt.Normalize(vmin=vmi, vmax=vma))
@@ -165,7 +120,6 @@ for i in imgs:
     new_frame = Image.open(i)
     frames.append(new_frame)
 
-# Save into a GIF file that loops forever
 frames[0].save('00000.gif', format='GIF',
                append_images=frames[1:],
                save_all=True,

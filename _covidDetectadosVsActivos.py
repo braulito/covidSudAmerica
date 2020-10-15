@@ -36,8 +36,6 @@ muertos = pd.read_csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19
 lista = rs.index.unique()
 
 muertos.drop(["Province/State","Lat","Long"],axis=1, inplace=True)
-muertos['Country/Region'] = muertos['Country/Region'].replace(['US'],'United States')
-muertos['Country/Region'] = muertos['Country/Region'].replace(['Russia'],'Russian Federation')
 muertos  = muertos[muertos['Country/Region']=='Argentina']
 muertos.rename(columns = {'Country/Region': 'Pais'}, inplace = True)
 muertos = muertos.groupby(['Pais']).sum()
@@ -49,9 +47,11 @@ muertos = muertos.transpose()
 activos = confirmados - muertos - recuperados
 
 confirmados.rename(columns = {'Argentina': 'Detectados'}, inplace = True)
+
 activos.rename(columns = {'Argentina': 'Activos'}, inplace = True)
 
 ax = confirmados.plot(figsize=(10,5))
+
 activos.plot(ax=ax)
 
 del confirmados
